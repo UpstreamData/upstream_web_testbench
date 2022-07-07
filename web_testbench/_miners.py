@@ -4,11 +4,11 @@ import os
 import logging
 import datetime
 
-from miner_interface.network import ping_miner
-from miner_interface.miners.miner_factory import MinerFactory
-from miner_interface.miners.antminer import BOSMinerS9
-from miner_interface.miners._backends.bosminer_old import BOSMinerOld  # noqa - Ignore access to _module
-from miner_interface.miners.unknown import UnknownMiner
+from pyasic.network import ping_miner
+from pyasic.miners.miner_factory import MinerFactory
+from pyasic.miners.antminer import BOSMinerS9
+from pyasic.miners._backends.bosminer_old import BOSMinerOld  # noqa - Ignore access to _module
+from pyasic.miners.unknown import UnknownMiner
 from web_testbench.connections import ConnectionManager
 from web_testbench.feeds import get_local_versions
 from settings import NETWORK_PING_TIMEOUT as PING_TIMEOUT

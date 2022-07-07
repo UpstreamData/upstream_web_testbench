@@ -8,7 +8,7 @@ import os
 from fastapi.templating import Jinja2Templates
 
 from web_testbench.feeds import update_installer_files
-from miner_interface.miners.miner_factory import MinerFactory
+from pyasic.miners.miner_factory import MinerFactory
 from web_testbench.connections import ConnectionManager
 from web_testbench._miners import TestbenchMiner
 from web_testbench._network import miner_network
