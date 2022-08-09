@@ -66,9 +66,9 @@ def dashboard(request: Request):
     )
 
 
-@app.on_event("startup")
-async def update_installer():
-    await update_installer_files()
+#@app.on_event("startup")
+#async def update_installer():
+#await update_installer_files()
 
 
 @app.on_event("startup")

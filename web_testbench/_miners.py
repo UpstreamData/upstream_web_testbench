@@ -6,12 +6,13 @@ import datetime
 
 from pyasic.network import ping_miner
 from pyasic.miners.miner_factory import MinerFactory
+from pyasic.miners.antminer.bmminer.X9.S9 import BMMinerS9
 from pyasic.miners.antminer import BOSMinerS9
 from pyasic.miners._backends.bosminer_old import BOSMinerOld  # noqa - Ignore access to _module
 from pyasic.miners.unknown import UnknownMiner
 from web_testbench.connections import ConnectionManager
 from web_testbench.feeds import get_local_versions
-from settings import NETWORK_PING_TIMEOUT as PING_TIMEOUT
+from pyasic.settings import PyasicSettings
 
 REFERRAL_FILE_S9 = os.path.join(os.path.dirname(__file__), "files", "referral.ipk")
 UPDATE_FILE_S9 = os.path.join(os.path.dirname(__file__), "files", "update.tar")
@@ -146,12 +147,21 @@ class TestbenchMiner:
             await self.add_to_output("Already running BraiinsOS, updating.")
             self.state = UPDATE
             return
+        elif isinstance(miner, BMMinerS9):
+            if await ping_miner(self.host, 22):
+                await self.add_to_output("Miner is unlocked, installing.")
+                self.state = INSTALL
+                return
+            else:
+                await self.add_to_output("Miner needs unlock, unlocking.")
+                self.state = UNLOCK
+                return
         elif isinstance(miner, UnknownMiner):
             await self.add_to_output("Unknown Miner found, attempting to fix.")
             try:
                 await self.do_install()
                 async with (
-                    await miner._get_ssh_connection()  # noqa - Ignore access to _function
+                        await miner._get_ssh_connection()  # noqa - Ignore access to _function
                 ) as conn:
                     result = await conn.run("opkg update && opkg upgrade firmware")
             except:
@@ -163,13 +173,6 @@ class TestbenchMiner:
                 await asyncio.sleep(10)
                 self.state = START
                 return
-
-        if await ping_miner(self.host, 22):
-            await self.add_to_output("Miner is unlocked, installing.")
-            self.state = INSTALL
-            return
-        await self.add_to_output("Miner needs unlock, unlocking.")
-        self.state = UNLOCK
 
     async def install_unlock(self):
         if await self.ssh_unlock():
@@ -418,8 +421,8 @@ class TestbenchMiner:
         await self.add_to_output("Waiting for disconnect...")
         try:
             while (
-                await asyncio.wait_for(ping_miner(self.host), PING_TIMEOUT + 3)
-                and self.state == DONE
+                    await asyncio.wait_for(ping_miner(self.host), PyasicSettings().network_ping_timeout + 3)
+                    and self.state == DONE
             ):
                 try:
                     data = await self.get_web_data()
